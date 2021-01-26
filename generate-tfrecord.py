@@ -3,19 +3,19 @@ import tensorflow as tf
 from PIL import Image
 import os
 
-tf.app.flags.DEFINE_string('classes_file', None, 'Path to the text file containing downloaded classes, name per line')
-tf.app.flags.DEFINE_string('class_descriptions_file', None, 'Path to the CSV file with class id mapping to human readable label name')
-tf.app.flags.DEFINE_string('annotations_file', None, 'Path to the CSV file with bbox annotations')
-tf.app.flags.DEFINE_string('images_dir', None, 'Path to the directory with downloaded images')
-tf.app.flags.DEFINE_string('output_file', None, 'Path to the resulting TFRecord file')
-tf.app.flags.mark_flags_as_required([
+tf.compat.v1.app.flags.DEFINE_string('classes_file', None, 'Path to the text file containing downloaded classes, name per line')
+tf.compat.v1.app.flags.DEFINE_string('class_descriptions_file', None, 'Path to the CSV file with class id mapping to human readable label name')
+tf.compat.v1.app.flags.DEFINE_string('annotations_file', None, 'Path to the CSV file with bbox annotations')
+tf.compat.v1.app.flags.DEFINE_string('images_dir', None, 'Path to the directory with downloaded images')
+tf.compat.v1.app.flags.DEFINE_string('output_file', None, 'Path to the resulting TFRecord file')
+tf.compat.v1.app.flags.mark_flags_as_required([
     'classes_file',
     'class_descriptions_file',
     'annotations_file',
     'images_dir',
     'output_file'
 ])
-FLAGS = tf.app.flags.FLAGS
+FLAGS = tf.compat.v1.app.flags.FLAGS
 
 
 def main(_):
@@ -29,15 +29,15 @@ def main(_):
     annotations['LabelName'] = annotations['LabelName'].map(lambda n: class_descriptions[n])
     annotations = annotations.groupby('ImageID')
 
-    images = tf.gfile.Glob(FLAGS.images_dir + '/*/*.jpg')
+    images = tf.io.gfile.glob(FLAGS.images_dir + '/*/*.jpg')
     images = map(lambda i: (os.path.basename(i).split('.jpg')[0], i), images)
     images = dict(images)
     print(f'{len(images)} images')
 
-    writer = tf.python_io.TFRecordWriter(FLAGS.output_file)
+    writer = tf.io.TFRecordWriter(FLAGS.output_file)
     for image_id, path in images.items():
         img_width, img_height = Image.open(path).size
-        img_data = tf.gfile.GFile(path, 'rb').read()
+        img_data = tf.io.gfile.GFile(path, 'rb').read()
 
         xmins = []
         xmaxs = []
@@ -76,4 +76,4 @@ def main(_):
     print(" done")
 
 if __name__ == '__main__':
-    tf.app.run()
+    tf.compat.v1.app.run()
